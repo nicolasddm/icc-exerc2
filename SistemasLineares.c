@@ -43,6 +43,7 @@ int eliminacaoGauss (SistLinear_t *SL, real_t *x, double *tTotal) {
       SL->b[k] -= SL->b[i] * mult;
     }
   }
+
   return 0;
 }
 
