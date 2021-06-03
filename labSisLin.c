@@ -1,21 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #include "utils.h"
 #include "SistemasLineares.h"
-
-real_t* retroSubs (SistLinear_t *SL, real_t *variaveis) {
-    for (int i = SL->n - 1; i >= 0; --i) {
-        variaveis[i] = SL->b[i];
-        for (int j = i + 1; j < SL->n; ++j) 
-            variaveis[i] -= SL->A[i][j] * variaveis[j];
-        variaveis[i] /= SL->A[i][i];
-    }
-
-    return variaveis;
-}
-
 
 int main () {
 
@@ -23,27 +12,38 @@ int main () {
     if (sist == NULL)
         perror("Não foi possível ler o Sistema Linear");
 
-    prnSistLinear(sist);
-    prnVetor(sist->b, sist->n);
-
     double tempo;
     tempo = timestamp();
     
-    int gauss = eliminacaoGauss(sist, sist->b, &tempo);
-    
-    tempo = timestamp() - tempo;
-    
-    if (gauss != 0) {
-        perror("Não foi possível realizar a Eliminação de Gauss");
-    }
-    
-    printf("Tempo da Eliminação de Gauss %lf", tempo);
-    prnSistLinear(sist);
-    prnVetor(sist->b, sist->n);
-
     real_t *variaveis;
-    variaveis = retroSubs(sist, variaveis);
+    for (int i = 0; i < sist->n; ++i) {
+      variaveis[i] = 0.0;
+    }
+    int gaussJac = gaussJacobi(sist, variaveis, &tempo);
+    tempo = timestamp() - tempo;
+    printf("====> Eliminação Gauss-Jacobi %lf ms --> %d iterações\n", tempo, gaussJac);
+    printf("  --> X: ");
     prnVetor(variaveis, sist->n);
+    int refinJacob = refinamento(sist, variaveis, &tempo);
+    
+    for (int i = 0; i < sist->n; ++i) {
+      variaveis[i] = 0.0;
+    }
+    int gaussSei = gaussSeidel(sist, variaveis, &tempo);
+    tempo = timestamp() - tempo;
+    printf("\n====> Eliminação Gauss-Seidel %lf ms --> %d iterações\n", tempo, gaussSei);
+    printf("  --> X: ");
+    prnVetor(variaveis, sist->n);
+    int refinGaussSei = refinamento(sist, variaveis, &tempo);
+    
 
+    int gauss = eliminacaoGauss(sist, sist->b, &tempo);
+    if (gauss != 0) {
+      perror("Não foi possível fazer Eliminação de Gauss");
+    }
+    printf("\n====> Eliminação Gauss %lf ms\n", tempo);
+    
+    variaveis = retroSubs(sist, variaveis);
+    int refin = refinamento(sist, variaveis, &tempo);
 }
 

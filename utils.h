@@ -22,4 +22,8 @@ int encontraMax(SistLinear_t *ST, unsigned int i);
 
 SistLinear_t* trocaLinha(SistLinear_t *ST, unsigned int i, int iPivo);
 
+real_t* retroSubs (SistLinear_t *SL, real_t *variaveis);
+
+int shouldStop(SistLinear_t *SL, real_t *x1, real_t *x2);
+
 #endif // __UTILS_H__
